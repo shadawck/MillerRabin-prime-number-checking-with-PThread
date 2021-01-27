@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    cout << "You have chosen " << threadNumber << "threads" << endl;
+    cout << "You have chosen " << threadNumber << " threads" << endl;
     FileParse::printTupleVector(intervals);
 
     return 0;
