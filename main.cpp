@@ -1,14 +1,15 @@
 #include <getopt.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <gmpxx.h>
 
 #include "ArgParse.hpp"
 #include "FileParse.hpp"
-
-void argumentMessage(vector<tuple<long, long>> vector, int number);
+#include "MillerRabinSeq.hpp"
 
 using namespace std;
+
+void argumentMessage(vector<tuple<long, long>> optimizedIntervals, int number);
 
 // ./pp_tp1 -t <threadNumber> -f <file_with_interval>
 int main(int argc, char **argv) {
@@ -19,7 +20,7 @@ int main(int argc, char **argv) {
     tuple<vector<long>, vector<long>> splitIntervals;
     vector<tuple<long, long>> optimizedIntervals;
 
-    while ((args = getopt(argc, argv, "t:f:")) != -1) { // while there is arguments to parse
+    while ((args = getopt(argc, argv, "t:f:")) != -1) {
         auto ap = ArgParse(optarg);
 
         switch (args) {
@@ -35,6 +36,8 @@ int main(int argc, char **argv) {
     }
 
     argumentMessage(optimizedIntervals, threadNumber);
+
+    MillerRabinSeq::testGMP("95647806479275528135733781266203904794419563064407",25);
 
     return 0;
 }
