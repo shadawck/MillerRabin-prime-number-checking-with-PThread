@@ -8,14 +8,18 @@ using namespace std;
 
 class FileParse {
 public:
-    FileParse(char *FILENAME);
+    FileParse(char *filename);
 
-    static void printTupleVector(vector<tuple<int, int>>);
+    static tuple<vector<long>, vector<long>> FileParseTri(char*);
 
-    const vector<tuple<int, int>> &getIntervals() const;
+    static void printTupleVector(const vector<tuple<long, long>>&);
+
+    static vector<tuple<long, long>> intervalsOptimisation(char *);
 
 private:
-    vector<tuple<int, int>> intervals;
+    static int cmp(long a, long b);
+
+    static long popFront(vector<long> &aVector) ;
 };
 
 #endif //PP_TP1_FILEPARSE_H
