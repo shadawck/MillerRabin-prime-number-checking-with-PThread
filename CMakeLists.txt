@@ -6,5 +6,5 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
-add_executable(pp_tp1 main.cpp FileParse.cpp FileParse.hpp ArgParse.cpp ArgParse.hpp MillerRabinSeq.cpp MillerRabinSeq.hpp MillerRabinPar.cpp MillerRabinPar.hpp)
+add_executable(pp_tp1 main.cpp ArgParse.cpp ArgParse.hpp MillerRabinSeq.cpp MillerRabinSeq.hpp MillerRabinPar.cpp MillerRabinPar.hpp FileParseMpz.cpp FileParseMpz.hpp)
 target_link_libraries(pp_tp1 gmp gmpxx)

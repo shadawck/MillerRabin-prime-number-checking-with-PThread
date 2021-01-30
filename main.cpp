@@ -4,12 +4,12 @@
 #include <gmpxx.h>
 
 #include "ArgParse.hpp"
-#include "FileParse.hpp"
+#include "FileParseMpz.hpp"
 #include "MillerRabinSeq.hpp"
 
 using namespace std;
 
-void argumentMessage(vector<tuple<long, long>> optimizedIntervals, int number);
+void argumentMessageMpz(const vector<tuple<mpz_class, mpz_class>> &optimizedIntervalsMpz, int threadNumber);
 
 // ./pp_tp1 -t <threadNumber> -f <file_with_interval>
 int main(int argc, char **argv) {
@@ -19,6 +19,7 @@ int main(int argc, char **argv) {
     vector<tuple<long, long>> intervals;
     tuple<vector<long>, vector<long>> splitIntervals;
     vector<tuple<long, long>> optimizedIntervals;
+    vector<tuple<mpz_class, mpz_class>> optimizedIntervalsMpz;
 
     while ((args = getopt(argc, argv, "t:f:")) != -1) {
         auto ap = ArgParse(optarg);
@@ -28,23 +29,23 @@ int main(int argc, char **argv) {
                 threadNumber = ap.getParseInt();
                 break;
             case 'f':
-                optimizedIntervals = FileParse::intervalsOptimisation(optarg);
+                optimizedIntervalsMpz = FileParseMpz::intervalsOptimisation(optarg);
                 break;
             default:
                 abort();
         }
     }
 
-    argumentMessage(optimizedIntervals, threadNumber);
+    argumentMessageMpz(optimizedIntervalsMpz, threadNumber);
 
-    MillerRabinSeq::testGMP("95647806479275528135733781266203904794419563064407",25);
+    MillerRabinSeq::testGMP("95647806479275528135733781266203904794419563064407", 25);
 
     return 0;
 }
 
-void argumentMessage(vector<tuple<long, long>> optimizedIntervals, int threadNumber) {
+void argumentMessageMpz(const vector<tuple<mpz_class, mpz_class>> &optimizedIntervalsMpz, int threadNumber) {
     cout << "\n--- Optimized Interval ---" << endl;
-    FileParse::printTupleVector(optimizedIntervals);
+    FileParseMpz::printTupleVector(optimizedIntervalsMpz);
 
     cout << "\n--- Threads Number --- " << endl;
     cout << threadNumber << endl;
