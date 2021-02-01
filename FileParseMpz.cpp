@@ -32,7 +32,7 @@ tuple<vector<mpz_class>, vector<mpz_class>> FileParseMpz::FileParseTri(char *FIL
  * @param splitIntervals Tuple of Intervals vectors : ([beginValues], [endValues])
  * @return
  */
-vector<tuple<mpz_class, mpz_class>> FileParseMpz::intervalsOptimisation(char *FILENAME) {
+tuple<int, vector<tuple<mpz_class, mpz_class>>> FileParseMpz::intervalsOptimisation(char *FILENAME) {
     tuple<vector<mpz_class>, vector<mpz_class>> splitIntervals = FileParseTri(FILENAME);
 
     vector<mpz_class> intervalMpzBegin = get<0>(splitIntervals);
@@ -77,7 +77,7 @@ vector<tuple<mpz_class, mpz_class>> FileParseMpz::intervalsOptimisation(char *FI
         optimizedInterval.emplace_back(newInterval);
     }
 
-    return optimizedInterval;
+    return make_tuple(nbOverlap, optimizedInterval);
 }
 
 /**
