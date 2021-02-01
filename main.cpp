@@ -9,15 +9,18 @@
 
 using namespace std;
 
-void argumentMessageMpz(const tuple<int, vector<tuple<mpz_class, mpz_class>>> &optimizedIntervalsMpz, int threadNumber);
+void argumentMessageMpz(const tuple<int, vector<tuple<mpz_class, mpz_class>>> &optimizedIntervalsMpz, int threadNb);
 
-void chronoExecution(Chrono &ch);
+void chronoExecution(Chrono &ch, Chrono &chPrime);
+
+void primeNumberMessage(const vector<mpz_class> &primeNumbers);
 
 // ./pp_tp1 -t <threadNumber> -f <file_with_interval>
 int main(int argc, char **argv) {
     int args;
     int threadNumber = 0;
-    Chrono ch;
+    Chrono chInterval;
+    Chrono chPrime;
 
     vector<tuple<long, long>> intervals;
     tuple<vector<long>, vector<long>> splitIntervals;
@@ -32,9 +35,9 @@ int main(int argc, char **argv) {
                 threadNumber = ap.getParseInt();
                 break;
             case 'f':
-                ch = Chrono(true);
+                chInterval = Chrono(true);
                 optimizedIntervalsMpz = FileParseMpz::intervalsOptimisation(optarg);
-                ch.pause();
+                chInterval.pause();
                 break;
             default:
                 abort();
@@ -42,16 +45,21 @@ int main(int argc, char **argv) {
     }
 
     argumentMessageMpz(optimizedIntervalsMpz, threadNumber);
-    chronoExecution(ch);
 
-    MillerRabinSeq::testGMP("95647806479275528135733781266203904794419563064407", 25);
+    auto mr = MillerRabinSeq();
+    chPrime = Chrono(true);
+    vector<mpz_class> primeNumbers = mr.computeInterval(optimizedIntervalsMpz);
+    chPrime.pause();
+    primeNumberMessage(primeNumbers);
+
+    chronoExecution(chInterval, chPrime);
 
     return 0;
 }
 
-void chronoExecution(Chrono &ch) {
-    cout << "Interval Optimization time : " << ch.get() << "sec" << endl;
-    cout << "Miller-Rabin Computing time : " << "TODO" << endl;
+void chronoExecution(Chrono &chInterval, Chrono &chPrime) {
+    cout << "Interval Optimization time : " << chInterval.get() << " sec" << endl;
+    cout << "Miller-Rabin Computing time : " << chPrime.get() << endl << " sec" << endl;;
 }
 
 void argumentMessageMpz(const tuple<int, vector<tuple<mpz_class, mpz_class>>> &optimizedIntervalsMpz, int threadNb) {
@@ -62,4 +70,8 @@ void argumentMessageMpz(const tuple<int, vector<tuple<mpz_class, mpz_class>>> &o
     }
     cout << "\n--- Threads Number --- " << endl;
     cout << threadNb << endl;
+}
+
+void primeNumberMessage(const vector<mpz_class> &primeNumbers) {
+    cout << primeNumbers.size() << " FOUND " << endl;
 }
