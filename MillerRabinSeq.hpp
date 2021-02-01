@@ -12,6 +12,8 @@ public:
     static vector<mpz_class> computeInterval(const vector<tuple<mpz_class, mpz_class>>&);
 
     static mpz_class &checkOddity(mpz_class &borneMin);
+
+    static mpz_class &checkStart(vector<mpz_class> &primeNumbers, mpz_class &borneMin);
 };
 
 
