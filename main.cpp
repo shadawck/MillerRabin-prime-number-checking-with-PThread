@@ -22,10 +22,8 @@ int main(int argc, char **argv) {
     Chrono chInterval;
     Chrono chPrime;
 
-    vector<tuple<long, long>> intervals;
-    tuple<vector<long>, vector<long>> splitIntervals;
-    vector<tuple<long, long>> optimizedIntervals;
     tuple<int, vector<tuple<mpz_class, mpz_class>>> optimizedIntervalsMpz;
+    vector<tuple<mpz_class, mpz_class>> intervals;
 
     while ((args = getopt(argc, argv, "t:f:")) != -1) {
         auto ap = ArgParse(optarg);
@@ -46,9 +44,9 @@ int main(int argc, char **argv) {
 
     argumentMessageMpz(optimizedIntervalsMpz, threadNumber);
 
-    auto mr = MillerRabinSeq();
+    intervals = get<1>(optimizedIntervalsMpz);
     chPrime = Chrono(true);
-    vector<mpz_class> primeNumbers = mr.computeInterval(optimizedIntervalsMpz);
+    vector<mpz_class> primeNumbers = MillerRabinSeq::computeInterval(intervals);
     chPrime.pause();
     primeNumberMessage(primeNumbers);
 
@@ -59,7 +57,8 @@ int main(int argc, char **argv) {
 
 void chronoExecution(Chrono &chInterval, Chrono &chPrime) {
     cout << "Interval Optimization time : " << chInterval.get() << " sec" << endl;
-    cout << "Miller-Rabin Computing time : " << chPrime.get() << endl << " sec" << endl;;
+    cout << "Miller-Rabin Computing time : " << chPrime.get() << " sec" << endl;
+    cout << "Total execution time :" << chInterval.get() + chPrime.get() << endl;
 }
 
 void argumentMessageMpz(const tuple<int, vector<tuple<mpz_class, mpz_class>>> &optimizedIntervalsMpz, int threadNb) {
@@ -67,11 +66,13 @@ void argumentMessageMpz(const tuple<int, vector<tuple<mpz_class, mpz_class>>> &o
     if (nbOverlap > 0) {
         cout << "\n--- Optimized Interval ---" << endl;
         cout << nbOverlap << " Interval have been optimized." << endl;
+        cout << get<1>(optimizedIntervalsMpz).size() << " Intervals to handle during prime computing" << endl;
     }
     cout << "\n--- Threads Number --- " << endl;
     cout << threadNb << endl;
 }
 
 void primeNumberMessage(const vector<mpz_class> &primeNumbers) {
+    cout << "\n--- Prime Numbers ---" << endl;
     cout << primeNumbers.size() << " FOUND " << endl;
 }
