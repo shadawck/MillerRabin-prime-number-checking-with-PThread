@@ -9,7 +9,7 @@ using namespace std;
 
 class MillerRabinSeq {
 public:
-    static vector<mpz_class> computeInterval(const vector<tuple<mpz_class, mpz_class>>&);
+    static vector<mpz_class> computePrime(const vector<tuple<mpz_class, mpz_class>> &intervals);
 
     static mpz_class &checkOddity(mpz_class &borneMin);
 

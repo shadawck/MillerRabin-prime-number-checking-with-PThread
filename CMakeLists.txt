@@ -7,4 +7,4 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
 add_executable(pp_tp1 main.cpp ArgParse.cpp ArgParse.hpp MillerRabinSeq.cpp MillerRabinSeq.hpp MillerRabinPar.cpp MillerRabinPar.hpp FileParseMpz.cpp FileParseMpz.hpp)
-target_link_libraries(pp_tp1 gmp gmpxx)
+target_link_libraries(pp_tp1 gmp gmpxx pthread)

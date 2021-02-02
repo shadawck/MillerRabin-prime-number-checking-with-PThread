@@ -10,7 +10,7 @@ int REPETITION_NUMBER = 10;
  * @param intervals
  * @return
  */
-vector<mpz_class> MillerRabinSeq::computeInterval(const vector<tuple<mpz_class, mpz_class>> &intervals) {
+vector<mpz_class> MillerRabinSeq::computePrime(const vector<tuple<mpz_class, mpz_class>> &intervals) {
     vector<mpz_class> primeNumbers;
     int primeProbability;
 
