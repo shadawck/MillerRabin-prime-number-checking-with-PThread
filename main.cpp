@@ -13,14 +13,17 @@
 
 using namespace std;
 
-void chronoExecution(Chrono &chInterval, Chrono &chPrime, Chrono &chPara) {
-    cout << "Interval Optimization time : " << chInterval.get() << " sec" << endl << endl;
+void chronoExecution(Chrono &chInterval, Chrono &chInterval2, Chrono &chPrime, Chrono &chPara) {
+    cout << "Interval V1 Optimization time : " << chInterval.get() << " sec" << endl;
+    cout << "Interval V2 Optimization time : " << chInterval2.get() << " sec" << endl << endl;
 
-    cout << "Miller-Rabin Sequential execution time : " << chPrime.get() << " sec" << endl;
-    cout << "Total Sequential execution time :" << chInterval.get() + chPrime.get() << endl << endl;
+    cout << "Miller-Rabin Sequential execution time : " << chPrime.get() << " sec" << endl <<endl;
+//    cout << "Total Sequential execution time :" << chInterval.get() + chPrime.get() << endl << endl;
 
-    cout << "First Parallel Method execution time : " << chPara.get() << " sec" << endl;
-    cout << "Total Parallel execution time : " << chInterval.get() + chPara.get() << " sec" << endl;
+    cout << "First Parallel Method execution time : " << chPara.get() << " sec" << endl << endl;
+//    cout << "Total Parallel execution time : " << chInterval.get() + chPara.get() << " sec" << endl << endl;
+
+    cout << "SPEEDUP : " << chPrime.get() / chPara.get() << endl;
 
 }
 
@@ -117,9 +120,14 @@ vector<vector<T>> SplitVector(const vector<T> &vec, size_t n) {
 
 /// ./pp_tp1 -t <threadNumber> -f <file_with_interval>
 int main(int argc, char **argv) {
-    tuple<int, vector<tuple<mpz_class, mpz_class>>> optimizedIntervalsMpz;
+
+    tuple<int, vector<tuple<mpz_class, mpz_class>>> optimizedIntervals_v1;
+    vector<tuple<mpz_class, mpz_class>> optimizedIntervals_v2;
+
     vector<tuple<mpz_class, mpz_class>> intervals;
+
     Chrono chInterval;
+    Chrono chInterval2;
     Chrono chSeq;
     Chrono chPara;
 
@@ -131,10 +139,15 @@ int main(int argc, char **argv) {
      * Interval Optimization
      */
     chInterval = Chrono(true);
-    optimizedIntervalsMpz = FileParseMpz::intervalsOptimisation(FILEPATH);
+    optimizedIntervals_v1 = FileParseMpz::intervalsOptimisation(FILEPATH);
     chInterval.pause();
 
-    intervals = get<1>(optimizedIntervalsMpz);
+    chInterval2 = Chrono(true);
+    optimizedIntervals_v2 = FileParseMpz::merge(FILEPATH);
+    chInterval2.pause();
+
+    intervals = get<1>(optimizedIntervals_v1);
+//  intervals = optimizedIntervals_v2;
 
     /**
      * MillerRabin Sequential
@@ -170,9 +183,9 @@ int main(int argc, char **argv) {
     /**
      * DISPLAY
      */
-    inputPrint(optimizedIntervalsMpz, THREAD_NUMBER);
+    inputPrint(optimizedIntervals_v1, THREAD_NUMBER);
     primeNbPrint(primeNumbers, thread_data_array->result);
-    chronoExecution(chInterval, chSeq, chPara);
+    chronoExecution(chInterval, chInterval2, chSeq, chPara);
 
     return 0;
 }

@@ -80,31 +80,63 @@ tuple<int, vector<tuple<mpz_class, mpz_class>>> FileParseMpz::intervalsOptimisat
     return make_tuple(nbOverlap, optimizedInterval);
 }
 
+vector<tuple<mpz_class, mpz_class>> FileParseMpz::merge(char * FILENAME)
+{
+    vector<tuple<mpz_class, mpz_class>> intervalsMpz;
+    fstream file(FILENAME);
+    mpz_class xMpz;
+    mpz_class yMpz;
+    while (file >> xMpz >> yMpz) {
+        intervalsMpz.emplace_back(make_tuple(xMpz, yMpz));
+    }
+    fstream close(FILENAME);
+
+    sort(intervalsMpz.begin(), intervalsMpz.end());
+
+    int index = 0;
+    for (size_t i=1; i < intervalsMpz.size(); i++)
+    {
+        if (get<1>(intervalsMpz[index]) >= get<0>(intervalsMpz[i]))
+        {
+            get<1>(intervalsMpz[index]) = max(get<1>(intervalsMpz[index]), get<1>(intervalsMpz[i]));
+            get<0>(intervalsMpz[index]) = min(get<0>(intervalsMpz[index]), get<0>(intervalsMpz[i]));
+        }
+        else {
+            intervalsMpz[index] = intervalsMpz[i];
+            index++;
+        }
+    }
+
+    intervalsMpz.erase(intervalsMpz.begin() + index + 1, intervalsMpz.end());
+
+    return intervalsMpz;
+}
+
 /**
  * Immitate python Pop function: Get first element of the vector and erase him from the vector.
  * @param aVector
  * @return First element of the vector.
  */
-mpz_class FileParseMpz::popFront(vector<mpz_class> &aVector) {
-    mpz_class position;
-    position = aVector.front();
-    aVector.erase(aVector.begin());
-    return position;
-}
-
-void FileParseMpz::printTupleVector(const vector<tuple<mpz_class, mpz_class>> &intervals) {
-    int ind = 0;
-    for (const auto &i : intervals) {
-        cout << "Interval " << ind << " : [" << get<0>(i) << ", " << get<1>(i) << "]" << endl;
-        ind++;
+    mpz_class FileParseMpz::popFront(vector<mpz_class> &aVector) {
+        mpz_class position;
+        position = aVector.front();
+        aVector.erase(aVector.begin());
+        return position;
     }
-}
 
-void FileParseMpz::printMpzVector(const vector<mpz_class> &intervals) {
-    int ind = 0;
-    for (const auto &i : intervals) {
-        cout << i << " ";
-        ind++;
+    void FileParseMpz::printTupleVector(const vector<tuple<mpz_class, mpz_class>> &intervals) {
+        int ind = 0;
+        for (const auto &i : intervals) {
+            cout << "Interval " << ind << " : [" << get<0>(i) << ", " << get<1>(i) << "]" << endl;
+            ind++;
+        }
     }
-    cout << endl;
-}
+
+    void FileParseMpz::printMpzVector(const vector<mpz_class> &intervals) {
+        int ind = 0;
+        for (const auto &i : intervals) {
+            cout << i << " ";
+            ind++;
+        }
+        cout << endl;
+    }
