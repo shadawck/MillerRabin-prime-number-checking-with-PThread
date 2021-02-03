@@ -9,6 +9,7 @@
 #include "FileParseMpz.hpp"
 #include "MillerRabinSeq.hpp"
 #include "Chrono.hpp"
+#include "MillerRabinPar.hpp"
 
 using namespace std;
 
@@ -29,7 +30,7 @@ void primeNbPrint(const vector<mpz_class> &primeNumbersSeq, const vector<mpz_cla
     cout << primeNumbersPar.size() << " Prime number found with Parallel method" << endl << endl;
 }
 
-void handleInputs(int argc, char **argv, int &THREAD_NUMBER, char *&FILEPATH) {
+void handleInputs(int argc, char **argv, size_t &THREAD_NUMBER, char *&FILEPATH) {
     THREAD_NUMBER = 0;
     int args;
     int FILE_FLAG = 0;
@@ -70,9 +71,13 @@ void inputPrint(const tuple<int, vector<tuple<mpz_class, mpz_class>>> &optiInter
     cout << threadNb << endl;
 }
 
+void wait() {
+    chrono::milliseconds timespan(1000);
+    this_thread::sleep_for(timespan);
+}
+
 typedef struct thread_data {
     vector<tuple<mpz_class, mpz_class>> intervals;
-//    int threadId{};
     vector<mpz_class> result;
 } thread_data;
 
@@ -84,21 +89,16 @@ void *workerOnIntervals(void *threadData) {
     auto *tData = (struct thread_data *) threadData;
     vector<mpz_class> primeNumbers;
     vector<tuple<mpz_class, mpz_class>> intervals = tData->intervals;
-//    int taskId = tData->threadId;
 
     primeNumbers = MillerRabinSeq::computePrime(intervals);
-
-    // add a mutex on result
-
-//    chrono::milliseconds timespan(1000);
-//    this_thread::sleep_for(timespan);
-//    printf("Thread %d : %zu \n\n", taskId, intervals.size());
+    // TODO stock prime Number in tData->result
 
     return nullptr;
 }
 
-template<typename T> vector<vector<T>> SplitVector(const vector<T> &vec, size_t n) {
-    std::vector<std::vector<T>> outVec;
+template<typename T>
+vector<vector<T>> SplitVector(const vector<T> &vec, size_t n) {
+    vector<vector<T>> outVec;
 
     size_t length = vec.size() / n;
     size_t remain = vec.size() % n;
@@ -108,7 +108,7 @@ template<typename T> vector<vector<T>> SplitVector(const vector<T> &vec, size_t 
 
     for (size_t i = 0; i < min(n, vec.size()); ++i) {
         end += (remain > 0) ? (length + !!(remain--)) : length;
-        outVec.push_back(std::vector<T>(vec.begin() + begin, vec.begin() + end));
+        outVec.push_back(vector<T>(vec.begin() + begin, vec.begin() + end));
         begin = end;
     }
 
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     Chrono chSeq;
     Chrono chPara;
 
-    int THREAD_NUMBER;
+    size_t THREAD_NUMBER;
     char *FILEPATH;
     handleInputs(argc, argv, THREAD_NUMBER, FILEPATH);
 
@@ -151,19 +151,18 @@ int main(int argc, char **argv) {
 
     vector<vector<tuple<mpz_class, mpz_class>>> sp = SplitVector(intervals, THREAD_NUMBER);
     // adapt threadNumber to number of intervals
-    if(sp.size() < THREAD_NUMBER)
+    if (sp.size() < THREAD_NUMBER)
         THREAD_NUMBER = sp.size();
 
     /// Use a struct to pass intervals data to worker function
     chPara = Chrono(true);
-    for (int t = 0; t < THREAD_NUMBER; t++) {
-//        thread_data_array[t].threadId = t;
+    for (size_t t = 0; t < THREAD_NUMBER; t++) {
         /// Split in even interval
         thread_data_array[t].intervals = sp[t];
         pthread_create(&threads[t], nullptr, workerOnIntervals, (void *) &thread_data_array[t]);
     }
 
-    for (int i = 0; i < THREAD_NUMBER; i++) {
+    for (size_t i = 0; i < THREAD_NUMBER; i++) {
         pthread_join(threads[i], nullptr);
     }
     chPara.pause();
