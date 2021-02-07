@@ -17,19 +17,15 @@ void chronoExecution(Chrono &chInterval, Chrono &chInterval2, Chrono &chPrime, C
     cout << "Interval V1 Optimization time : " << chInterval.get() << " sec" << endl;
     cout << "Interval V2 Optimization time : " << chInterval2.get() << " sec" << endl << endl;
 
-    cout << "Miller-Rabin Sequential execution time : " << chPrime.get() << " sec" << endl <<endl;
-//    cout << "Total Sequential execution time :" << chInterval.get() + chPrime.get() << endl << endl;
-
-    cout << "First Parallel Method execution time : " << chPara.get() << " sec" << endl << endl;
-//    cout << "Total Parallel execution time : " << chInterval.get() + chPara.get() << " sec" << endl << endl;
+    cout << "Total Sequential execution time : " << chInterval2.get() + chPrime.get() << endl;
+    cout << "Total Parallel execution time : " << chInterval2.get() + chPara.get() << " sec" << endl << endl;
 
     cout << "SPEEDUP : " << chPrime.get() / chPara.get() << endl;
-
 }
 
 void primeNbPrint(const vector<mpz_class> &primeNumbersSeq, const vector<mpz_class> &primeNumbersPar) {
     cout << "\n--- Prime Numbers ---" << endl;
-    cout << primeNumbersSeq.size() << " Prime number found with sequential method" << endl << endl;
+    cout << primeNumbersSeq.size() << " Prime number found with sequential method" << endl;
     cout << primeNumbersPar.size() << " Prime number found with Parallel method" << endl << endl;
 }
 
@@ -63,13 +59,10 @@ void handleInputs(int argc, char **argv, size_t &THREAD_NUMBER, char *&FILEPATH)
     }
 }
 
-void inputPrint(const tuple<int, vector<tuple<mpz_class, mpz_class>>> &optiIntervals, int threadNb) {
-    int nbOverlap = get<0>(optiIntervals);
-    if (nbOverlap > 0) {
-        cout << "\n--- Optimized Interval ---" << endl;
-        cout << nbOverlap << " Interval have been optimized." << endl;
-        cout << get<1>(optiIntervals).size() << " Intervals to handle during prime computing" << endl;
-    }
+void inputPrint(const vector<tuple<mpz_class, mpz_class>> &intervals, int threadNb) {
+    cout << "\n--- Optimized Interval ---" << endl;
+    cout << intervals.size() << " Intervals to handle during prime computing" << endl;
+
     cout << "\n--- Threads Number --- " << endl;
     cout << threadNb << endl;
 }
@@ -94,8 +87,10 @@ void *workerOnIntervals(void *threadData) {
     vector<tuple<mpz_class, mpz_class>> intervals = tData->intervals;
 
     primeNumbers = MillerRabinSeq::computePrime(intervals);
-    // TODO stock prime Number in tData->result
 
+    for(const mpz_class& i : primeNumbers){
+        tData->result.push_back(i);
+    }
     return nullptr;
 }
 
@@ -120,40 +115,34 @@ vector<vector<T>> SplitVector(const vector<T> &vec, size_t n) {
 
 /// ./pp_tp1 -t <threadNumber> -f <file_with_interval>
 int main(int argc, char **argv) {
+    vector<tuple<mpz_class, mpz_class>> INTERVALS;
 
-    tuple<int, vector<tuple<mpz_class, mpz_class>>> optimizedIntervals_v1;
-    vector<tuple<mpz_class, mpz_class>> optimizedIntervals_v2;
-
-    vector<tuple<mpz_class, mpz_class>> intervals;
-
-    Chrono chInterval;
-    Chrono chInterval2;
-    Chrono chSeq;
-    Chrono chPara;
+    tuple<vector<mpz_class>, vector<mpz_class>> readIntervals_v1;
+    vector<tuple<mpz_class, mpz_class>>  readIntervals_v2;
 
     size_t THREAD_NUMBER;
     char *FILEPATH;
+
     handleInputs(argc, argv, THREAD_NUMBER, FILEPATH);
 
     /**
      * Interval Optimization
      */
-    chInterval = Chrono(true);
-    optimizedIntervals_v1 = FileParseMpz::intervalsOptimisation(FILEPATH);
+    readIntervals_v1 = FileParseMpz::readFile_v1(FILEPATH);
+    auto chInterval = Chrono(true);
+    get<1>(FileParseMpz::intervalsOptimisation_v1(readIntervals_v1));
     chInterval.pause();
 
-    chInterval2 = Chrono(true);
-    optimizedIntervals_v2 = FileParseMpz::merge(FILEPATH);
+    readIntervals_v2 = FileParseMpz::readFile_v2(FILEPATH);
+    auto chInterval2 = Chrono(true);
+    INTERVALS = FileParseMpz::intervalsOptimisation_v2(readIntervals_v2);
     chInterval2.pause();
-
-    intervals = get<1>(optimizedIntervals_v1);
-//  intervals = optimizedIntervals_v2;
 
     /**
      * MillerRabin Sequential
      */
-    chSeq = Chrono(true);
-    vector<mpz_class> primeNumbers = MillerRabinSeq::computePrime(intervals);
+    auto chSeq = Chrono(true);
+    vector<mpz_class> primeNumbers = MillerRabinSeq::computePrime(INTERVALS);
     chSeq.pause();
 
     /**
@@ -162,13 +151,13 @@ int main(int argc, char **argv) {
     struct thread_data thread_data_array[THREAD_NUMBER];
     pthread_t threads[THREAD_NUMBER];
 
-    vector<vector<tuple<mpz_class, mpz_class>>> sp = SplitVector(intervals, THREAD_NUMBER);
-    // adapt threadNumber to number of intervals
+    vector<vector<tuple<mpz_class, mpz_class>>> sp = SplitVector(INTERVALS, THREAD_NUMBER);
+    /// adapt threadNumber to number of INTERVALS
     if (sp.size() < THREAD_NUMBER)
         THREAD_NUMBER = sp.size();
 
-    /// Use a struct to pass intervals data to worker function
-    chPara = Chrono(true);
+    /// Use a struct to pass INTERVALS data to worker function
+    auto chPara = Chrono(true);
     for (size_t t = 0; t < THREAD_NUMBER; t++) {
         /// Split in even interval
         thread_data_array[t].intervals = sp[t];
@@ -180,13 +169,18 @@ int main(int argc, char **argv) {
     }
     chPara.pause();
 
+    /// reassemble prime number from thread result
+    vector<mpz_class> prime;
+    for (size_t t = 0; t < THREAD_NUMBER; t++) {
+        prime.insert(prime.end(), thread_data_array[t].result.begin(), thread_data_array[t].result.end());
+    }
+
     /**
      * DISPLAY
      */
-    inputPrint(optimizedIntervals_v1, THREAD_NUMBER);
-    primeNbPrint(primeNumbers, thread_data_array->result);
+    inputPrint(INTERVALS, THREAD_NUMBER);
+    primeNbPrint(primeNumbers, prime);
     chronoExecution(chInterval, chInterval2, chSeq, chPara);
 
     return 0;
 }
-

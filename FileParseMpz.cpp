@@ -5,12 +5,14 @@
 
 using namespace std;
 
+
+
 /**
  *
  * @param FILENAME
  * @return Tuple of Intervals vectors : ([beginValues], [endValues])
  */
-tuple<vector<mpz_class>, vector<mpz_class>> FileParseMpz::FileParseTri(char *FILENAME) {
+tuple<vector<mpz_class>, vector<mpz_class>> FileParseMpz::readFile_v1(char *FILENAME) {
     vector<mpz_class> intervalMpzBegin;
     vector<mpz_class> intervalMpzEnd;
 
@@ -27,14 +29,25 @@ tuple<vector<mpz_class>, vector<mpz_class>> FileParseMpz::FileParseTri(char *FIL
     return make_tuple(intervalMpzBegin, intervalMpzEnd);
 }
 
+vector<tuple<mpz_class, mpz_class>> FileParseMpz::readFile_v2(char* FILENAME){
+    vector<tuple<mpz_class, mpz_class>> intervalsMpz;
+    fstream file(FILENAME);
+    mpz_class xMpz;
+    mpz_class yMpz;
+    while (file >> xMpz >> yMpz) {
+        intervalsMpz.emplace_back(make_tuple(xMpz, yMpz));
+    }
+    fstream close(FILENAME);
+
+    return intervalsMpz;
+}
+
 /**
  * Make Intervals union to get reduced intervals
  * @param splitIntervals Tuple of Intervals vectors : ([beginValues], [endValues])
  * @return
  */
-tuple<int, vector<tuple<mpz_class, mpz_class>>> FileParseMpz::intervalsOptimisation(char *FILENAME) {
-    tuple<vector<mpz_class>, vector<mpz_class>> splitIntervals = FileParseTri(FILENAME);
-
+tuple<int, vector<tuple<mpz_class, mpz_class>>> FileParseMpz::intervalsOptimisation_v1(tuple<vector<mpz_class>, vector<mpz_class>> splitIntervals) {
     vector<mpz_class> intervalMpzBegin = get<0>(splitIntervals);
     vector<mpz_class> intervalMpzEnd = get<1>(splitIntervals);
 
@@ -80,17 +93,8 @@ tuple<int, vector<tuple<mpz_class, mpz_class>>> FileParseMpz::intervalsOptimisat
     return make_tuple(nbOverlap, optimizedInterval);
 }
 
-vector<tuple<mpz_class, mpz_class>> FileParseMpz::merge(char * FILENAME)
+vector<tuple<mpz_class, mpz_class>> FileParseMpz::intervalsOptimisation_v2(vector<tuple<mpz_class, mpz_class>> intervalsMpz)
 {
-    vector<tuple<mpz_class, mpz_class>> intervalsMpz;
-    fstream file(FILENAME);
-    mpz_class xMpz;
-    mpz_class yMpz;
-    while (file >> xMpz >> yMpz) {
-        intervalsMpz.emplace_back(make_tuple(xMpz, yMpz));
-    }
-    fstream close(FILENAME);
-
     sort(intervalsMpz.begin(), intervalsMpz.end());
 
     int index = 0;
