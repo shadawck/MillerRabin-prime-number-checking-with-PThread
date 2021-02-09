@@ -6,19 +6,17 @@
 #include <chrono>
 
 #include "ArgParse.hpp"
-#include "FileParseMpz.hpp"
+#include "FileParse.hpp"
 #include "MillerRabinSeq.hpp"
 #include "Chrono.hpp"
-#include "MillerRabinPar.hpp"
 
 using namespace std;
 
-void chronoExecution(Chrono &chInterval, Chrono &chInterval2, Chrono &chPrime, Chrono &chPara) {
-    cout << "Interval V1 Optimization time : " << chInterval.get() << " sec" << endl;
-    cout << "Interval V2 Optimization time : " << chInterval2.get() << " sec" << endl << endl;
+void chronoExecution(Chrono &chInterval, Chrono &chPrime, Chrono &chPara) {
+    cout << "Interval V2 Optimization time : " << chInterval.get() << " sec" << endl << endl;
 
-    cout << "Total Sequential execution time : " << chInterval2.get() + chPrime.get() << endl;
-    cout << "Total Parallel execution time : " << chInterval2.get() + chPara.get() << " sec" << endl << endl;
+    cout << "Total Sequential execution time : " << chInterval.get() + chPrime.get() << endl;
+    cout << "Total Parallel execution time : " << chInterval.get() + chPara.get() << " sec" << endl << endl;
 
     cout << "SPEEDUP : " << chPrime.get() / chPara.get() << endl;
 }
@@ -67,11 +65,6 @@ void inputPrint(const vector<tuple<mpz_class, mpz_class>> &intervals, int thread
     cout << threadNb << endl;
 }
 
-void wait() {
-    chrono::milliseconds timespan(1000);
-    this_thread::sleep_for(timespan);
-}
-
 typedef struct thread_data {
     vector<tuple<mpz_class, mpz_class>> intervals;
     vector<mpz_class> result;
@@ -116,71 +109,57 @@ vector<vector<T>> SplitVector(const vector<T> &vec, size_t n) {
 /// ./pp_tp1 -t <threadNumber> -f <file_with_interval>
 int main(int argc, char **argv) {
     vector<tuple<mpz_class, mpz_class>> INTERVALS;
-
-    tuple<vector<mpz_class>, vector<mpz_class>> readIntervals_v1;
-    vector<tuple<mpz_class, mpz_class>>  readIntervals_v2;
+    vector<tuple<mpz_class, mpz_class>>  readIntervals;
 
     size_t THREAD_NUMBER;
     char *FILEPATH;
 
     handleInputs(argc, argv, THREAD_NUMBER, FILEPATH);
 
-    /**
-     * Interval Optimization
-     */
-    readIntervals_v1 = FileParseMpz::readFile_v1(FILEPATH);
+    readIntervals = FileParse::readFile(FILEPATH);
     auto chInterval = Chrono(true);
-    get<1>(FileParseMpz::intervalsOptimisation_v1(readIntervals_v1));
+    INTERVALS = FileParse::intervalsOptimisation_v2(readIntervals, THREAD_NUMBER);
     chInterval.pause();
-
-    readIntervals_v2 = FileParseMpz::readFile_v2(FILEPATH);
-    auto chInterval2 = Chrono(true);
-    INTERVALS = FileParseMpz::intervalsOptimisation_v2(readIntervals_v2);
-    chInterval2.pause();
 
     /**
      * MillerRabin Sequential
      */
     auto chSeq = Chrono(true);
-    vector<mpz_class> primeNumbers = MillerRabinSeq::computePrime(INTERVALS);
+    vector<mpz_class> primeNumbersSeq = MillerRabinSeq::computePrime(INTERVALS);
     chSeq.pause();
 
     /**
-     * Miller rabin Parallel
+     * SOLUTION - Miller rabin Parallel
      */
     struct thread_data thread_data_array[THREAD_NUMBER];
     pthread_t threads[THREAD_NUMBER];
 
-    vector<vector<tuple<mpz_class, mpz_class>>> sp = SplitVector(INTERVALS, THREAD_NUMBER);
-    /// adapt threadNumber to number of INTERVALS
-    if (sp.size() < THREAD_NUMBER)
-        THREAD_NUMBER = sp.size();
+    vector<vector<tuple<mpz_class, mpz_class>>> splitVector = SplitVector(INTERVALS, THREAD_NUMBER);
 
     /// Use a struct to pass INTERVALS data to worker function
-    auto chPara = Chrono(true);
+    auto chPar = Chrono(true);
     for (size_t t = 0; t < THREAD_NUMBER; t++) {
         /// Split in even interval
-        thread_data_array[t].intervals = sp[t];
+        thread_data_array[t].intervals = splitVector[t];
         pthread_create(&threads[t], nullptr, workerOnIntervals, (void *) &thread_data_array[t]);
     }
 
     for (size_t i = 0; i < THREAD_NUMBER; i++) {
         pthread_join(threads[i], nullptr);
     }
-    chPara.pause();
 
-    /// reassemble prime number from thread result
-    vector<mpz_class> prime;
+    vector<mpz_class> primeNumbersPar;
     for (size_t t = 0; t < THREAD_NUMBER; t++) {
-        prime.insert(prime.end(), thread_data_array[t].result.begin(), thread_data_array[t].result.end());
+        primeNumbersPar.insert(primeNumbersPar.end(), thread_data_array[t].result.begin(), thread_data_array[t].result.end());
     }
+    chPar.pause();
 
     /**
      * DISPLAY
      */
     inputPrint(INTERVALS, THREAD_NUMBER);
-    primeNbPrint(primeNumbers, prime);
-    chronoExecution(chInterval, chInterval2, chSeq, chPara);
+    primeNbPrint(primeNumbersSeq, primeNumbersPar);
+    chronoExecution(chInterval, chSeq, chPar);
 
     return 0;
 }
