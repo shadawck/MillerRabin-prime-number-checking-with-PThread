@@ -27,7 +27,7 @@ void chronoExecution(Chrono &chInterval, Chrono &chSeq, Chrono &chPara) {
 }
 
 void printPrimeNumber(const vector<mpz_class> &primeNumbersPar) {
-    for (const mpz_class& prime : primeNumbersPar) {
+    for (const mpz_class &prime : primeNumbersPar) {
         cout << prime << " ";
     }
     cout << endl;
@@ -95,7 +95,7 @@ void *workerOnIntervals(void *threadData) {
 
     primeNumbers = MillerRabinSeq::computePrime(intervals);
 
-    for(const mpz_class& i : primeNumbers){
+    for (const mpz_class &i : primeNumbers) {
         tData->result.push_back(i);
     }
     return nullptr;
@@ -122,7 +122,7 @@ vector<vector<T>> SplitVector(const vector<T> &vec, size_t n) {
 /// ./pp_tp1 -t <threadNumber> -f <file_with_interval>
 int main(int argc, char **argv) {
     vector<tuple<mpz_class, mpz_class>> INTERVALS;
-    vector<tuple<mpz_class, mpz_class>>  readIntervals;
+    vector<tuple<mpz_class, mpz_class>> readIntervals;
 
     size_t THREAD_NUMBER;
     char *FILEPATH;
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
 
     readIntervals = FileParse::readFile(FILEPATH);
     auto chInterval = Chrono(true);
-    INTERVALS = FileParse::intervalsOptimisation_v2(readIntervals, THREAD_NUMBER);
+    INTERVALS = FileParse::intervalsOptimisation(readIntervals, THREAD_NUMBER);
     chInterval.pause();
 
     /**
@@ -149,7 +149,6 @@ int main(int argc, char **argv) {
 
     vector<vector<tuple<mpz_class, mpz_class>>> splitVector = SplitVector(INTERVALS, THREAD_NUMBER);
 
-
     /// Use a struct to pass INTERVALS data to worker function
     auto chPar = Chrono(true);
     for (size_t t = 0; t < THREAD_NUMBER; t++) {
@@ -164,7 +163,8 @@ int main(int argc, char **argv) {
 
     vector<mpz_class> primeNumbersPar;
     for (size_t t = 0; t < THREAD_NUMBER; t++) {
-        primeNumbersPar.insert(primeNumbersPar.end(), thread_data_array[t].result.begin(), thread_data_array[t].result.end());
+        primeNumbersPar.insert(primeNumbersPar.end(), thread_data_array[t].result.begin(),
+                               thread_data_array[t].result.end());
     }
     chPar.pause();
 
@@ -172,8 +172,8 @@ int main(int argc, char **argv) {
      * DISPLAY
      */
     inputPrint(INTERVALS, THREAD_NUMBER);
-    chronoExecution(chInterval, chSeq, chPar);
     primeNbDisplay(primeNumbersSeq, primeNumbersPar);
+    chronoExecution(chInterval, chSeq, chPar);
 
     return 0;
 }

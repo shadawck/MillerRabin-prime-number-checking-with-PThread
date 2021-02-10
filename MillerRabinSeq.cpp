@@ -14,9 +14,9 @@ vector<mpz_class> MillerRabinSeq::computePrime(const vector<tuple<mpz_class, mpz
     vector<mpz_class> primeNumbers;
     int primeProbability;
 
-    for (tuple<mpz_class, mpz_class> t : intervals) {
-        mpz_class borneMin = get<0>(t);
-        mpz_class borneMax = get<1>(t);
+    for (tuple<mpz_class, mpz_class> tup : intervals) {
+        mpz_class borneMin = get<0>(tup);
+        mpz_class borneMax = get<1>(tup);
 
         borneMin = checkStart(primeNumbers, borneMin);
         borneMin = checkOddity(borneMin);
