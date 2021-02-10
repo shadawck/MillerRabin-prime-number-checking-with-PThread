@@ -1,5 +1,4 @@
 #include <fstream>
-#include <iostream>
 #include <tuple>
 
 #include "FileParse.hpp"
@@ -73,10 +72,8 @@ FileParse::intervalsOptimisation(vector<tuple<mpz_class, mpz_class>> intervals, 
     intervals.erase(intervals.begin() + index + 1, intervals.end());
 
     if (intervals.size() < THREAD_NUMBER) {
-        cout << "ich bin here" << endl;
         return adaptInterval(intervals, THREAD_NUMBER, intervals.size());
     }
-
 
     return intervals;
 }

@@ -49,11 +49,12 @@ void printPrimeNumber(const vector<mpz_class> &primeNumbersPar) {
  * @param primeNumbersPar
  */
 void primeNbDisplay(const vector<mpz_class> &primeNumbersSeq, const vector<mpz_class> &primeNumbersPar) {
+
     cout << "\n--- Prime Numbers ---" << endl;
 
     printPrimeNumber(primeNumbersPar);
 
-    cout << primeNumbersSeq.size() << " Prime number found with sequential method" << endl;
+    cout << endl << primeNumbersSeq.size() << " Prime number found with sequential method" << endl;
     cout << primeNumbersPar.size() << " Prime number found with Parallel method" << endl << endl;
 }
 
@@ -183,10 +184,6 @@ int main(int argc, char **argv) {
     pthread_t threads[THREAD_NUMBER];
 
     vector<vector<tuple<mpz_class, mpz_class>>> splitVector = SplitVector(INTERVALS, THREAD_NUMBER);
-
-    if(splitVector.size() < THREAD_NUMBER){
-        THREAD_NUMBER = splitVector.size();
-    }
 
     /// Use an array of struct to pass INTERVALS data to worker function
     auto chPar = Chrono(true);
