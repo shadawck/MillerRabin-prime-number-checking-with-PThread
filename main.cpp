@@ -12,6 +12,12 @@
 
 using namespace std;
 
+/***
+ * Print chrono execution time
+ * @param chInterval
+ * @param chSeq
+ * @param chPara
+ */
 void chronoExecution(Chrono &chInterval, Chrono &chSeq, Chrono &chPara) {
     double chronoSeq = chInterval.get() + chSeq.get();
     double chronoPar = chInterval.get() + chPara.get();
@@ -26,6 +32,10 @@ void chronoExecution(Chrono &chInterval, Chrono &chSeq, Chrono &chPara) {
     cout << "SPEEDUP : " << chSeq.get() / chPara.get() << endl;
 }
 
+/***
+ * Print all prime number found
+ * @param primeNumbersPar
+ */
 void printPrimeNumber(const vector<mpz_class> &primeNumbersPar) {
     for (const mpz_class &prime : primeNumbersPar) {
         cout << prime << " ";
@@ -33,14 +43,27 @@ void printPrimeNumber(const vector<mpz_class> &primeNumbersPar) {
     cout << endl;
 }
 
+/***
+ * Display size and primeNumber
+ * @param primeNumbersSeq
+ * @param primeNumbersPar
+ */
 void primeNbDisplay(const vector<mpz_class> &primeNumbersSeq, const vector<mpz_class> &primeNumbersPar) {
     cout << "\n--- Prime Numbers ---" << endl;
-    cout << primeNumbersSeq.size() << " Prime number found with sequential method" << endl;
-    cout << primeNumbersPar.size() << " Prime number found with Parallel method" << endl << endl;
 
     printPrimeNumber(primeNumbersPar);
+
+    cout << primeNumbersSeq.size() << " Prime number found with sequential method" << endl;
+    cout << primeNumbersPar.size() << " Prime number found with Parallel method" << endl << endl;
 }
 
+/***
+ * Handle user input
+ * @param argc
+ * @param argv
+ * @param THREAD_NUMBER
+ * @param FILEPATH
+ */
 void handleInputs(int argc, char **argv, size_t &THREAD_NUMBER, char *&FILEPATH) {
     THREAD_NUMBER = 0;
     int args;
@@ -71,6 +94,11 @@ void handleInputs(int argc, char **argv, size_t &THREAD_NUMBER, char *&FILEPATH)
     }
 }
 
+/***
+ * Print user input
+ * @param intervals
+ * @param threadNb
+ */
 void inputPrint(const vector<tuple<mpz_class, mpz_class>> &intervals, int threadNb) {
     cout << "\n--- Optimized Interval ---" << endl;
     cout << intervals.size() << " Intervals to handle during prime computing" << endl;
@@ -85,7 +113,7 @@ typedef struct thread_data {
 } thread_data;
 
 /***
- * Each threads handle one Interval. Thus, in this version interval are not splitted
+ * Each threads handle a group of Interval
  * @param intervals
  */
 void *workerOnIntervals(void *threadData) {
@@ -101,6 +129,13 @@ void *workerOnIntervals(void *threadData) {
     return nullptr;
 }
 
+/***
+ * Split Interval Vector to divide works for thread
+ * @tparam T
+ * @param vec
+ * @param n
+ * @return vector of vector of tuple
+ */
 template<typename T>
 vector<vector<T>> SplitVector(const vector<T> &vec, size_t n) {
     vector<vector<T>> outVec;
@@ -149,7 +184,7 @@ int main(int argc, char **argv) {
 
     vector<vector<tuple<mpz_class, mpz_class>>> splitVector = SplitVector(INTERVALS, THREAD_NUMBER);
 
-    /// Use a struct to pass INTERVALS data to worker function
+    /// Use an array of struct to pass INTERVALS data to worker function
     auto chPar = Chrono(true);
     for (size_t t = 0; t < THREAD_NUMBER; t++) {
         /// Split in even interval
@@ -161,6 +196,7 @@ int main(int argc, char **argv) {
         pthread_join(threads[i], nullptr);
     }
 
+    /// Join prime number result
     vector<mpz_class> primeNumbersPar;
     for (size_t t = 0; t < THREAD_NUMBER; t++) {
         primeNumbersPar.insert(primeNumbersPar.end(), thread_data_array[t].result.begin(),

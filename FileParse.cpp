@@ -6,6 +6,11 @@
 
 using namespace std;
 
+/***
+ * Read file and store value as mpz_class type in a vector
+ * @param FILENAME
+ * @return vector of tuple
+ */
 vector<tuple<mpz_class, mpz_class>> FileParse::readFile(char *FILENAME) {
     vector<tuple<mpz_class, mpz_class>> intervalsMpz;
     fstream file(FILENAME);
@@ -18,6 +23,12 @@ vector<tuple<mpz_class, mpz_class>> FileParse::readFile(char *FILENAME) {
     return intervalsMpz;
 }
 
+/***
+ * Split Tuple in n even tuple (modulo remain)
+ * @param tup
+ * @param n
+ * @return vector of tuple
+ */
 vector<tuple<mpz_class, mpz_class>> SplitTuple(tuple<mpz_class, mpz_class> tup, size_t n) {
     vector<tuple<mpz_class, mpz_class>> outTup;
 
@@ -39,6 +50,12 @@ vector<tuple<mpz_class, mpz_class>> SplitTuple(tuple<mpz_class, mpz_class> tup, 
     return outTup;
 }
 
+/***
+ * Optimize interval by removing overlapping intervals
+ * @param intervals
+ * @param THREAD_NUMBER
+ * @return vector of tuple
+ */
 vector<tuple<mpz_class, mpz_class>>
 FileParse::intervalsOptimisation(vector<tuple<mpz_class, mpz_class>> intervals, size_t THREAD_NUMBER) {
     sort(intervals.begin(), intervals.end());
@@ -61,6 +78,13 @@ FileParse::intervalsOptimisation(vector<tuple<mpz_class, mpz_class>> intervals, 
     return intervals;
 }
 
+/***
+ * Split Intervals according to number of thread
+ * @param intervals
+ * @param THREAD_NUMBER
+ * @param intervalSize
+ * @return vector of tuple
+ */
 vector<tuple<mpz_class, mpz_class>>
 FileParse::adaptInterval(const vector<tuple<mpz_class, mpz_class>> &intervals, size_t THREAD_NUMBER,
                          size_t intervalSize) {
