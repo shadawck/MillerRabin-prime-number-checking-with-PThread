@@ -49,7 +49,6 @@ void printPrimeNumber(const vector<mpz_class> &primeNumbersPar) {
  * @param primeNumbersPar
  */
 void primeNbDisplay(const vector<mpz_class> &primeNumbersSeq, const vector<mpz_class> &primeNumbersPar) {
-
     cout << "\n--- Prime Numbers ---" << endl;
 
     printPrimeNumber(primeNumbersPar);
