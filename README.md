@@ -13,3 +13,8 @@ make
 cd cmake-build-release
 ./pp_tp1 -t <threadNumber> -f <file_with_interval>
 ```
+
+Par exemple : 
+```sh
+./pp_tp1 -t 8 -f ../sample/7_long.txt
+```
