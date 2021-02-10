@@ -208,8 +208,6 @@ int main(int argc, char **argv) {
     }
     chPar.pause();
 
-
-
     /**
      * DISPLAY
      */

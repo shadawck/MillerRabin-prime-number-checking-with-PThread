@@ -60,9 +60,6 @@ vector<tuple<mpz_class, mpz_class>>
 FileParse::intervalsOptimisation(vector<tuple<mpz_class, mpz_class>> intervals, size_t THREAD_NUMBER) {
     sort(intervals.begin(), intervals.end());
 
-    if (intervals.size() < THREAD_NUMBER) {
-        return adaptInterval(intervals, THREAD_NUMBER, intervals.size());
-    }
 
     int index = 0;
     for (size_t i = 0; i < intervals.size(); i++) {
@@ -73,8 +70,14 @@ FileParse::intervalsOptimisation(vector<tuple<mpz_class, mpz_class>> intervals, 
             index++;
         }
     }
-
     intervals.erase(intervals.begin() + index + 1, intervals.end());
+
+    if (intervals.size() < THREAD_NUMBER) {
+        cout << "ich bin here" << endl;
+        return adaptInterval(intervals, THREAD_NUMBER, intervals.size());
+    }
+
+
     return intervals;
 }
 
