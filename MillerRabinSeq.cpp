@@ -1,4 +1,5 @@
 #include "MillerRabinSeq.hpp"
+#include <iostream>
 #include <gmpxx.h>
 
 using namespace std;
@@ -18,8 +19,8 @@ vector<mpz_class> MillerRabinSeq::computePrime(const vector<tuple<mpz_class, mpz
         mpz_class borneMin = get<0>(tup);
         mpz_class borneMax = get<1>(tup);
 
-        borneMin = checkStart(primeNumbers, borneMin);
-        borneMin = checkOddity(borneMin);
+        mpz_class borneMinTemp = checkStart(primeNumbers, borneMin);
+        borneMin = checkOddity(borneMinTemp);
 
         /// Prime number can't be even, so iterate just through odd number of the interval
         for (; borneMin <= borneMax; borneMin = borneMin + 2) {

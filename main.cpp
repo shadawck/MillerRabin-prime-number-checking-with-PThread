@@ -184,6 +184,10 @@ int main(int argc, char **argv) {
 
     vector<vector<tuple<mpz_class, mpz_class>>> splitVector = SplitVector(INTERVALS, THREAD_NUMBER);
 
+    if(splitVector.size() < THREAD_NUMBER){
+        THREAD_NUMBER = splitVector.size();
+    }
+
     /// Use an array of struct to pass INTERVALS data to worker function
     auto chPar = Chrono(true);
     for (size_t t = 0; t < THREAD_NUMBER; t++) {
@@ -204,11 +208,13 @@ int main(int argc, char **argv) {
     }
     chPar.pause();
 
+
+
     /**
      * DISPLAY
      */
-    inputPrint(INTERVALS, THREAD_NUMBER);
     primeNbDisplay(primeNumbersSeq, primeNumbersPar);
+    inputPrint(INTERVALS, THREAD_NUMBER);
     chronoExecution(chInterval, chSeq, chPar);
 
     return 0;

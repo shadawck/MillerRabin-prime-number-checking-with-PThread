@@ -65,7 +65,7 @@ FileParse::intervalsOptimisation(vector<tuple<mpz_class, mpz_class>> intervals, 
     }
 
     int index = 0;
-    for (size_t i = 1; i < intervals.size(); i++) {
+    for (size_t i = 0; i < intervals.size(); i++) {
         if (get<1>(intervals[index]) >= get<0>(intervals[i])) {
             get<1>(intervals[index]) = max(get<1>(intervals[index]), get<1>(intervals[i]));
             get<0>(intervals[index]) = min(get<0>(intervals[index]), get<0>(intervals[i]));
