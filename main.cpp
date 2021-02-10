@@ -12,19 +12,33 @@
 
 using namespace std;
 
-void chronoExecution(Chrono &chInterval, Chrono &chPrime, Chrono &chPara) {
-    cout << "Interval V2 Optimization time : " << chInterval.get() << " sec" << endl << endl;
+void chronoExecution(Chrono &chInterval, Chrono &chSeq, Chrono &chPara) {
+    double chronoSeq = chInterval.get() + chSeq.get();
+    double chronoPar = chInterval.get() + chPara.get();
 
-    cout << "Total Sequential execution time : " << chInterval.get() + chPrime.get() << endl;
-    cout << "Total Parallel execution time : " << chInterval.get() + chPara.get() << " sec" << endl << endl;
+    cout << "\n--- Execution Time ---" << endl;
 
-    cout << "SPEEDUP : " << chPrime.get() / chPara.get() << endl;
+    cout << "Interval Optimization time : " << chInterval.get() << " sec" << endl;
+
+    fprintf(stderr, "Total Sequential execution time : %f \n", chronoSeq);
+    fprintf(stderr, "Total Parallel execution time : %f \n", chronoPar);
+
+    cout << "SPEEDUP : " << chSeq.get() / chPara.get() << endl;
 }
 
-void primeNbPrint(const vector<mpz_class> &primeNumbersSeq, const vector<mpz_class> &primeNumbersPar) {
+void printPrimeNumber(const vector<mpz_class> &primeNumbersPar) {
+    for (const mpz_class& prime : primeNumbersPar) {
+        cout << prime << " ";
+    }
+    cout << endl;
+}
+
+void primeNbDisplay(const vector<mpz_class> &primeNumbersSeq, const vector<mpz_class> &primeNumbersPar) {
     cout << "\n--- Prime Numbers ---" << endl;
     cout << primeNumbersSeq.size() << " Prime number found with sequential method" << endl;
     cout << primeNumbersPar.size() << " Prime number found with Parallel method" << endl << endl;
+
+    printPrimeNumber(primeNumbersPar);
 }
 
 void handleInputs(int argc, char **argv, size_t &THREAD_NUMBER, char *&FILEPATH) {
@@ -102,7 +116,6 @@ vector<vector<T>> SplitVector(const vector<T> &vec, size_t n) {
         outVec.push_back(vector<T>(vec.begin() + begin, vec.begin() + end));
         begin = end;
     }
-
     return outVec;
 }
 
@@ -136,6 +149,7 @@ int main(int argc, char **argv) {
 
     vector<vector<tuple<mpz_class, mpz_class>>> splitVector = SplitVector(INTERVALS, THREAD_NUMBER);
 
+
     /// Use a struct to pass INTERVALS data to worker function
     auto chPar = Chrono(true);
     for (size_t t = 0; t < THREAD_NUMBER; t++) {
@@ -158,8 +172,8 @@ int main(int argc, char **argv) {
      * DISPLAY
      */
     inputPrint(INTERVALS, THREAD_NUMBER);
-    primeNbPrint(primeNumbersSeq, primeNumbersPar);
     chronoExecution(chInterval, chSeq, chPar);
+    primeNbDisplay(primeNumbersSeq, primeNumbersPar);
 
     return 0;
 }

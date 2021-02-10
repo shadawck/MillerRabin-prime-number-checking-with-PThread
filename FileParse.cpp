@@ -4,6 +4,8 @@
 
 #include "FileParse.hpp"
 
+vector<tuple<mpz_class, mpz_class>> merge(char *FILENAME);
+
 using namespace std;
 
 vector<tuple<mpz_class, mpz_class>> FileParse::readFile(char *FILENAME) {
@@ -38,23 +40,20 @@ vector<tuple<mpz_class, mpz_class>> SplitTuple(tuple<mpz_class, mpz_class> tup, 
 
     return outTup;
 }
-
 vector<tuple<mpz_class, mpz_class>>
 FileParse::intervalsOptimisation_v2(vector<tuple<mpz_class, mpz_class>> intervals, size_t THREAD_NUMBER) {
-    size_t intervalSize = intervals.size();
     sort(intervals.begin(), intervals.end());
-    int index = 0;
 
     if (intervals.size() < THREAD_NUMBER) {
-        return adaptInterval(intervals, THREAD_NUMBER, intervalSize);
+        return adaptInterval(intervals, THREAD_NUMBER, intervals.size());
     }
 
-    for (size_t i = 1; i < intervalSize; i++) {
+    int index = 0;
+    for (size_t i = 1; i < intervals.size(); i++) {
         if (get<1>(intervals[index]) >= get<0>(intervals[i])) {
             get<1>(intervals[index]) = max(get<1>(intervals[index]), get<1>(intervals[i]));
             get<0>(intervals[index]) = min(get<0>(intervals[index]), get<0>(intervals[i]));
         } else {
-            intervals[index] = intervals[i];
             index++;
         }
     }
@@ -62,6 +61,7 @@ FileParse::intervalsOptimisation_v2(vector<tuple<mpz_class, mpz_class>> interval
     intervals.erase(intervals.begin() + index + 1, intervals.end());
     return intervals;
 }
+
 
 vector<tuple<mpz_class, mpz_class>>
 FileParse::adaptInterval(const vector<tuple<mpz_class, mpz_class>> &intervals, size_t THREAD_NUMBER,

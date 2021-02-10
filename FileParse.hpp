@@ -15,6 +15,7 @@ public :
 
     static vector<tuple<mpz_class, mpz_class>>
     intervalsOptimisation_v2(vector<tuple<mpz_class, mpz_class>> intervals, size_t THREAD_NUMBER);
+    static vector<tuple<mpz_class, mpz_class>> merge(char *FILENAME);
 
 private :
     static vector<tuple<mpz_class, mpz_class>>
